@@ -22,13 +22,15 @@
     UIActivityIndicatorView *indicatorView;
 	UIScrollView *scrollView;
     
-	CGFloat basicCurveValue;
-    CGFloat connectLineTopWidthValue;
-    CGFloat connectLineBottomWidthValue;
+	CGFloat bottomYOffset;
+    CGFloat leftXOffset;
+    CGFloat curveOffset;
 	
-	CGFloat pullConnectLineLengthValue;
-	CGFloat pullConnectLineTopWidthValue;
-	CGFloat pullConnectLineBottomWidthValue;
+	CGFloat tempVerticalValue;
+	CGFloat tempLeftXOffset;
+	CGFloat tempCurveOffsert;
+	
+	CGFloat ballViewStartY;
 	
     CADisplayLink *display;
     BOOL dragFinish;

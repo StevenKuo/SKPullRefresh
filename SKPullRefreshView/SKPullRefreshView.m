@@ -9,32 +9,34 @@
 #import "SKPullRefreshView.h"
 
 @interface SKPullRefreshView()
-@property (assign, nonatomic) CGFloat connectLineLengthValue;
+@property (assign, nonatomic) CGFloat verticalValue;
 @end
 @implementation SKPullRefreshView
 
 - (instancetype)initWithFrame:(CGRect)frame scrollView:(UIScrollView *)inScrollView
 {
-	if (!inScrollView) {
-		return nil;
-	}
+	NSAssert(inScrollView, @"have to give a scrollView");
+	NSAssert(CGRectGetHeight(frame) >= 100.0, @"minmum of height is 100");
 	
     self = [super initWithFrame:frame];
     if (self) {
         self.backgroundColor = [UIColor whiteColor];
-        ball = [[UIView alloc] initWithFrame:CGRectMake((CGRectGetWidth(self.frame) - 50.0) / 2.0, 50.0, 50.0, 50.0)];
+		
+		ballViewStartY = CGRectGetHeight(frame) / 2.0 - 50.0;
+		
+        ball = [[UIView alloc] initWithFrame:CGRectMake((CGRectGetWidth(self.frame) - 50.0) / 2.0, ballViewStartY, 50.0, 50.0)];
         ball.layer.cornerRadius = 25.0;
         ball.backgroundColor = [UIColor colorWithRed:0.50 green:0.59 blue:0.78 alpha:1.00];
         [self addSubview:ball];
-        
+		
         indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
         indicatorView.frame = CGRectMake(0.0, 0.0, 50.0, 50.0);
 		[indicatorView startAnimating];
 		indicatorView.alpha = 0.0;
         [ball addSubview:indicatorView];
         
-        connectLineBottomWidthValue = 10;
-        connectLineTopWidthValue = -20.0;
+        curveOffset = 10;
+        leftXOffset = -20.0;
 		
 		scrollView = inScrollView;
 		
@@ -43,43 +45,43 @@
     return self;
 }
 
-- (void)setConnectLineLengthValue:(CGFloat)inConnectLineLengthValue
+- (void)setVerticalValue:(CGFloat)inVerticalValue
 {
 	if (!dragFinish) {
 		[UIView animateWithDuration:0.25 animations:^{
-			if (inConnectLineLengthValue >= 35.0) {
+			if (inVerticalValue >= 35.0) {
 				indicatorView.alpha = 1.0;
 			}
 			else {
 				indicatorView.alpha = 0.0;
 			}
 		}];
-
+		
 	}
-
-	connectLineLengthValue = inConnectLineLengthValue;
+	
+	verticalValue = inVerticalValue;
 }
 
 - (void)_resetStateAfterRestore
 {
-	ball.frame = CGRectMake(CGRectGetMinX(ball.frame), 50.0, CGRectGetWidth(ball.frame), CGRectGetHeight(ball.frame));
+	ball.frame = CGRectMake(CGRectGetMinX(ball.frame), ballViewStartY, CGRectGetWidth(ball.frame), CGRectGetHeight(ball.frame));
 	dragFinish = NO;
 	startRestore = NO;
-	basicCurveValue = 0.0;
-	self.connectLineLengthValue = 0.0;
-	connectLineBottomWidthValue = 10;
-	connectLineTopWidthValue = -20.0;
+	bottomYOffset = 0.0;
+	self.verticalValue = 0.0;
+	curveOffset = 10;
+	leftXOffset = -20.0;
 	[self setNeedsDisplay];
 }
 
-- (void)_keepConnectValue
+- (void)_keepRestoreValue
 {
-	pullConnectLineLengthValue = self.connectLineLengthValue;
-	self.connectLineLengthValue = 0;
-	pullConnectLineTopWidthValue = connectLineTopWidthValue;
-	connectLineTopWidthValue = 0;
-	pullConnectLineBottomWidthValue = connectLineBottomWidthValue;
-	connectLineBottomWidthValue = 0;
+	tempVerticalValue = self.verticalValue;
+	self.verticalValue = 0;
+	tempLeftXOffset = leftXOffset;
+	leftXOffset = 0;
+	tempCurveOffsert = curveOffset;
+	curveOffset = 0;
 	[self setNeedsDisplay];
 }
 
@@ -109,9 +111,9 @@
 {
 	startRestore = YES;
     dragFinish = NO;
-    self.connectLineLengthValue = pullConnectLineLengthValue;
-    connectLineTopWidthValue = pullConnectLineTopWidthValue;
-    connectLineBottomWidthValue = pullConnectLineBottomWidthValue;
+    self.verticalValue = tempVerticalValue;
+    leftXOffset = tempLeftXOffset;
+    curveOffset = tempCurveOffsert;
     [self setNeedsDisplay];
     if (!display) {
         display = [CADisplayLink displayLinkWithTarget:self selector:@selector(updateValueForRestore:)];
@@ -121,7 +123,7 @@
 
 - (void)updateValueForRestore:(id)sender
 {
-    if (CGRectGetMinY(ball.frame) <= 50.0) {
+    if (CGRectGetMinY(ball.frame) <= ballViewStartY) {
         if (display) {
             [display invalidate];
             display = nil;
@@ -130,61 +132,46 @@
 		scrollView.scrollEnabled = YES;
         return;
     }
-    if (connectLineBottomWidthValue < 10.0) {
-        connectLineBottomWidthValue += 2.5;
+    if (curveOffset < 10.0) {
+        curveOffset += 2.5;
     }
-    if (connectLineTopWidthValue > -20.0) {
-        connectLineTopWidthValue -=2.5;
+    if (leftXOffset > -20.0) {
+        leftXOffset -=2.5;
     }
-    if (self.connectLineLengthValue > 0) {
-        self.connectLineLengthValue -= 5.0;
+    if (self.verticalValue > 0) {
+        self.verticalValue -= 5.0;
     }
     ball.frame = CGRectMake(CGRectGetMinX(ball.frame), CGRectGetMinY(ball.frame) - 5.0, CGRectGetWidth(ball.frame), CGRectGetHeight(ball.frame));
-	scrollView.contentOffset = CGPointMake(0.0, -(CGRectGetMinY(ball.frame) - 50.0));
+	scrollView.contentOffset = CGPointMake(0.0, -(CGRectGetMinY(ball.frame) - ballViewStartY));
     [self setNeedsDisplay];
 }
 
 - (void)drag:(CGFloat)distance
 {
-    if (50.0 + distance >= 140.0) {
-        ball.frame = CGRectMake(CGRectGetMinX(ball.frame), 140.0, CGRectGetWidth(ball.frame), CGRectGetHeight(ball.frame));
+    if (ballViewStartY + distance >= 100.0 + ballViewStartY - 10.0) {
+        ball.frame = CGRectMake(CGRectGetMinX(ball.frame), 100.0 + ballViewStartY - 10.0, CGRectGetWidth(ball.frame), CGRectGetHeight(ball.frame));
         return;
     }
     
-    ball.frame = CGRectMake(CGRectGetMinX(ball.frame), 50.0 + distance, CGRectGetWidth(ball.frame), CGRectGetHeight(ball.frame));
-    
-    if (CGRectGetMinX(ball.frame) < 55.0) {
+    ball.frame = CGRectMake(CGRectGetMinX(ball.frame), ballViewStartY + distance, CGRectGetWidth(ball.frame), CGRectGetHeight(ball.frame));
+	
+    if (CGRectGetMinY(ball.frame) < ballViewStartY + 5.0) {
         return;
     }
         
-    CGFloat moveDistance = (CGRectGetMinY(ball.frame) - 55.0);
+    CGFloat moveDistance = (CGRectGetMinY(ball.frame) - (ballViewStartY + 5.0));
     if (moveDistance <= 0.0) {
         return;
     }
     
-    basicCurveValue = moveDistance / 2.0;
+    bottomYOffset = moveDistance / 2.0;
     
-    self.connectLineLengthValue = (moveDistance / 2.0) - 5.0 <= 0 ? 0.0 : (moveDistance / 2.0) - 5.0;
-    
-    if (10.0 - (moveDistance / 4.0) <= 0.0) {
-        connectLineBottomWidthValue = 0.0;
-    }
-    else if (10.0 - (moveDistance / 4.0) >= 10.0) {
-        connectLineBottomWidthValue = 10.0;
-    }
-    else {
-        connectLineBottomWidthValue = 10.0 - (moveDistance / 4.0);
-    }
-    
-    if (-20.0 + (moveDistance / 5.0) <= -20.0) {
-        connectLineTopWidthValue = -20.0;
-    }
-    else if (-20.0 + (moveDistance / 5.0) >= 0) {
-        connectLineTopWidthValue = 0.0;
-    }
-    else {
-        connectLineTopWidthValue = -20.0 + (moveDistance / 5.0);
-    }
+    self.verticalValue = (moveDistance / 2.0) - 5.0 <= 0 ? 0.0 : (moveDistance / 2.0) - 5.0;
+	
+	curveOffset = 10.0 - (moveDistance / 4.0) <= 0.0 ? 0.0 : 10.0 - (moveDistance / 4.0);
+	
+	leftXOffset = -20.0 + (moveDistance / 5.0);
+	
     [self setNeedsDisplay];
 }
 
@@ -196,40 +183,44 @@
         [self setNeedsDisplay];
 		[delegate dragAnimatioinFinish];
     }
-    if (basicCurveValue <= -5.0) {
+    if (bottomYOffset <= -5.0) {
         dragFinish = YES;
-        basicCurveValue = 5.0;
-		[self _keepConnectValue];
+        bottomYOffset = 5.0;
+		[self _keepRestoreValue];
     }
-    basicCurveValue -= 2.0;
-    self.connectLineLengthValue += 2.0;
-    connectLineTopWidthValue +=0.8;
+    bottomYOffset -= 2.0;
+    self.verticalValue += 2.0;
+    leftXOffset +=0.8;
     [self setNeedsDisplay];
 }
 
 - (void)drawRect:(CGRect)rect {
     
     if (dragFinish) {
-        basicCurveValue = 0.0;
-        self.connectLineLengthValue = 0;
-        connectLineTopWidthValue = 0;
-        connectLineBottomWidthValue = 0;
+        bottomYOffset = 0.0;
+        self.verticalValue = 0;
+        leftXOffset = 0;
+        curveOffset = 0;
     }
-    
-    CGFloat firstPoint = (CGRectGetWidth(self.frame) - CGRectGetWidth(ball.frame)) / 2.0;
-    CGFloat secondePoint = CGRectGetWidth(self.frame) - firstPoint;
-    CGFloat begin = CGRectGetHeight(self.frame) / 2.0;
+    CGFloat leftX = (CGRectGetWidth(self.frame) - CGRectGetWidth(ball.frame)) / 2.0;
+    CGFloat rightX = CGRectGetWidth(self.frame) - leftX;
+    CGFloat bottomY = CGRectGetHeight(self.frame) / 2.0;
+	
     CGContextRef ctx = UIGraphicsGetCurrentContext();
-    
     CGMutablePathRef path = CGPathCreateMutable();
+	
     
-    CGPathMoveToPoint(path, NULL, 0.0, 0.0);
-    CGPathAddLineToPoint(path, NULL, 0.0, begin);
-    CGPathAddQuadCurveToPoint(path, NULL, 70.0, begin + basicCurveValue, firstPoint + connectLineTopWidthValue, begin + basicCurveValue);
-    CGPathAddQuadCurveToPoint(path, NULL, firstPoint + 15.0 + connectLineTopWidthValue, begin + basicCurveValue + 1, firstPoint + 15.0 - 10.0 + connectLineBottomWidthValue, begin + basicCurveValue + self.connectLineLengthValue);
-    CGPathAddLineToPoint(path, NULL, secondePoint - 15.0 + 10.0 - connectLineBottomWidthValue, begin + basicCurveValue + self.connectLineLengthValue);
-    CGPathAddQuadCurveToPoint(path, NULL, secondePoint - 15.0 - connectLineTopWidthValue, begin + basicCurveValue + 1, secondePoint - connectLineTopWidthValue, begin + basicCurveValue);
-    CGPathAddQuadCurveToPoint(path, NULL, CGRectGetWidth(self.frame) - 70.0, begin + basicCurveValue, CGRectGetWidth(self.frame), begin);
+	CGPathMoveToPoint(path, NULL, 0.0, 0.0);
+    CGPathAddLineToPoint(path, NULL, 0.0, bottomY);
+	
+	
+    CGPathAddQuadCurveToPoint(path, NULL, 70.0, bottomY + bottomYOffset, leftX + leftXOffset, bottomY + bottomYOffset);
+    CGPathAddQuadCurveToPoint(path, NULL, leftX + leftXOffset + 15.0, bottomY + bottomYOffset + 1, leftX + 15.0 - 10.0 + curveOffset, bottomY + bottomYOffset + self.verticalValue);
+    CGPathAddLineToPoint(path, NULL, rightX - 15.0 + 10.0 - curveOffset, bottomY + bottomYOffset + self.verticalValue);
+    CGPathAddQuadCurveToPoint(path, NULL, rightX - 15.0 - leftXOffset, bottomY + bottomYOffset + 1, rightX - leftXOffset, bottomY + bottomYOffset);
+    CGPathAddQuadCurveToPoint(path, NULL, CGRectGetWidth(self.frame) - 70.0, bottomY + bottomYOffset, CGRectGetWidth(self.frame), bottomY);
+	
+	
     CGPathAddLineToPoint(path, NULL, CGRectGetWidth(self.frame), 0.0);
     
     CGContextAddPath(ctx, path);
@@ -238,5 +229,5 @@
 }
 
 @synthesize delegate;
-@synthesize connectLineLengthValue;
+@synthesize verticalValue;
 @end

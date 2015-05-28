@@ -50,15 +50,9 @@
 
 - (void)dragAnimatioinFinish
 {
-	NSURLSession *taskSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:[NSOperationQueue currentQueue]];
-	NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"http://boiling-fjord-8215.herokuapp.com/testDelay"]];
-	[request setHTTPMethod:@"POST"];
-	NSData *time = [@"2" dataUsingEncoding:NSUTF8StringEncoding];
-	[request setHTTPBody:time];
-	NSURLSessionDataTask *task = [taskSession dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
 		[refreshView restore];
-	}];
-	[task resume];
+	});
 }
 
 @end
