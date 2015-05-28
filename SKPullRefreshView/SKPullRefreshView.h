@@ -35,12 +35,14 @@
     CADisplayLink *display;
     BOOL dragFinish;
 	BOOL startRestore;
-    
+    BOOL waittingRestore;
 
 }
 
 - (instancetype)initWithFrame:(CGRect)frame scrollView:(UIScrollView *)inScrollView;
 - (void)restore;
+- (void)resetStateAfterRestore;
 
 @property (weak, nonatomic) id <SKPullRefreshView> delegate;
+@property (readonly, nonatomic) BOOL waittingRestore;
 @end

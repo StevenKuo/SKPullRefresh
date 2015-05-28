@@ -62,7 +62,7 @@
 	verticalValue = inVerticalValue;
 }
 
-- (void)_resetStateAfterRestore
+- (void)resetStateAfterRestore
 {
 	ball.frame = CGRectMake(CGRectGetMinX(ball.frame), ballViewStartY, CGRectGetWidth(ball.frame), CGRectGetHeight(ball.frame));
 	dragFinish = NO;
@@ -72,6 +72,7 @@
 	curveOffset = 10;
 	leftXOffset = -20.0;
 	[self setNeedsDisplay];
+	waittingRestore = NO;
 }
 
 - (void)_keepRestoreValue
@@ -181,6 +182,7 @@
         [display invalidate];
         display = nil;
         [self setNeedsDisplay];
+		waittingRestore = YES;
 		[delegate dragAnimatioinFinish];
     }
     if (bottomYOffset <= -5.0) {
@@ -230,4 +232,5 @@
 
 @synthesize delegate;
 @synthesize verticalValue;
+@synthesize waittingRestore;
 @end
