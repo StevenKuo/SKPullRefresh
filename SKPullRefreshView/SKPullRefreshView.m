@@ -129,7 +129,7 @@
             [display invalidate];
             display = nil;
         }
-		[self _resetStateAfterRestore];
+		[self resetStateAfterRestore];
 		scrollView.scrollEnabled = YES;
         return;
     }
