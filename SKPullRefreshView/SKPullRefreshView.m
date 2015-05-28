@@ -13,6 +13,12 @@
 @end
 @implementation SKPullRefreshView
 
+- (void)dealloc
+{
+	delegate = nil;
+	[scrollView removeObserver:self forKeyPath:@"contentOffset"];
+}
+
 - (instancetype)initWithFrame:(CGRect)frame scrollView:(UIScrollView *)inScrollView backgroundColor:(UIColor *)color
 {
 	NSAssert(inScrollView, @"have to give a scrollView");
