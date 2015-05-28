@@ -21,6 +21,8 @@
     UIView *ball;
     UIActivityIndicatorView *indicatorView;
 	UIScrollView *scrollView;
+	
+	UIColor *mainColor;
     
 	CGFloat bottomYOffset;
     CGFloat leftXOffset;
@@ -39,7 +41,7 @@
 
 }
 
-- (instancetype)initWithFrame:(CGRect)frame scrollView:(UIScrollView *)inScrollView;
+- (instancetype)initWithFrame:(CGRect)frame scrollView:(UIScrollView *)inScrollView backgroundColor:(UIColor *)color;
 - (void)restore;
 - (void)resetStateAfterRestore;
 

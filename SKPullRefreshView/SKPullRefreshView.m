@@ -13,7 +13,7 @@
 @end
 @implementation SKPullRefreshView
 
-- (instancetype)initWithFrame:(CGRect)frame scrollView:(UIScrollView *)inScrollView
+- (instancetype)initWithFrame:(CGRect)frame scrollView:(UIScrollView *)inScrollView backgroundColor:(UIColor *)color
 {
 	NSAssert(inScrollView, @"have to give a scrollView");
 	NSAssert(CGRectGetHeight(frame) >= 100.0, @"minmum of height is 100");
@@ -22,11 +22,13 @@
     if (self) {
         self.backgroundColor = [UIColor whiteColor];
 		
+		mainColor = color;
+		
 		ballViewStartY = CGRectGetHeight(frame) / 2.0 - 50.0;
 		
         ball = [[UIView alloc] initWithFrame:CGRectMake((CGRectGetWidth(self.frame) - 50.0) / 2.0, ballViewStartY, 50.0, 50.0)];
         ball.layer.cornerRadius = 25.0;
-        ball.backgroundColor = [UIColor colorWithRed:0.50 green:0.59 blue:0.78 alpha:1.00];
+        ball.backgroundColor = mainColor;
         [self addSubview:ball];
 		
         indicatorView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
@@ -226,7 +228,7 @@
     CGPathAddLineToPoint(path, NULL, CGRectGetWidth(self.frame), 0.0);
     
     CGContextAddPath(ctx, path);
-    CGContextSetFillColorWithColor(ctx, [UIColor colorWithRed:0.50 green:0.59 blue:0.78 alpha:1.00].CGColor);
+    CGContextSetFillColorWithColor(ctx, mainColor.CGColor);
     CGContextFillPath(ctx);
 }
 

@@ -25,7 +25,7 @@
 	table.delegate = self;
 	table.dataSource = self;
 	
-	refreshView = [[SKPullRefreshView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width, 200.0) scrollView:table];
+	refreshView = [[SKPullRefreshView alloc] initWithFrame:CGRectMake(0.0, 0.0, self.view.frame.size.width, 200.0) scrollView:table backgroundColor:[UIColor colorWithRed:0.50 green:0.59 blue:0.78 alpha:1.00]];
 	refreshView.delegate = self;
 	[self.view addSubview:refreshView];
 	[self.view addSubview:table];
